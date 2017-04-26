@@ -44,7 +44,7 @@ setup(
     license='LGPL',
     install_requires=[
         'score.init',
-        'score.tpl',
+        'score.tpl >= 0.3.0',
         'jinja2',
     ],
 )
