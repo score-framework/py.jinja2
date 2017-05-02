@@ -75,7 +75,14 @@ def test_loader():
         score.tpl.render('foo.jinja2.tpl')
 
 
-def test_global_function():
+def test_global():
+    score = init_score(finalize=False)
+    score.tpl.filetypes['text/html'].add_global('data', 'foo!')
+    score._finalize()
+    assert score.tpl.render('echo.jinja2') == 'foo!'
+
+
+def test_global_with_loader():
     score = init_score(finalize=False)
     loader = unittest.mock.Mock()
     loader.load.return_value = (False, '{{ func() }}')
