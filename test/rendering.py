@@ -1,5 +1,8 @@
 from .init import init_score
 import unittest.mock
+import pytest
+import jinja2
+from score.tpl import TemplateNotFound
 
 
 def test_echo():
@@ -64,14 +67,63 @@ def test_function():
     assert score.tpl.render('foo.jinja2.tpl', {'func': lambda: '<'}) == '&lt;'
 
 
+def test_loader():
+    score = init_score(finalize=False)
+    score.tpl.filetypes['text/plain'].extensions.append('tpl')
+    score._finalize()
+    with pytest.raises(TemplateNotFound):
+        score.tpl.render('foo.jinja2.tpl')
+
+
 def test_global_function():
     score = init_score(finalize=False)
     loader = unittest.mock.Mock()
     loader.load.return_value = (False, '{{ func() }}')
     score.tpl.loaders['tpl'].append(loader)
     score.tpl.filetypes['text/plain'].extensions.append('tpl')
+    score.tpl.filetypes['text/html'].add_global('func', lambda: 'foo!')
+    score._finalize()
+    loader.load.assert_not_called()
+    assert score.tpl.render('foo.jinja2.tpl') == 'foo!'
+    loader.load.assert_called_once_with('foo.jinja2.tpl')
+
+
+def test_escaped_global_function():
+    score = init_score(finalize=False)
+    loader = unittest.mock.Mock()
+    loader.load.return_value = (False, '{{ func() }}')
+    score.tpl.loaders['tpl'].append(loader)
+    score.tpl.filetypes['text/plain'].extensions.append('tpl')
+    score.tpl.filetypes['text/html'].add_global('func', lambda: '<')
+    score._finalize()
+    loader.load.assert_not_called()
+    assert score.tpl.render('foo.jinja2.tpl') == '&lt;'
+    loader.load.assert_called_once_with('foo.jinja2.tpl')
+
+
+def test_unescaped_global_function():
+    score = init_score(finalize=False)
+    loader = unittest.mock.Mock()
+    loader.load.return_value = (False, '{{ func() }}')
+    score.tpl.loaders['tpl'].append(loader)
+    score.tpl.filetypes['text/plain'].extensions.append('tpl')
+    score.tpl.filetypes['text/html'].add_global('func', lambda: '<',
+                                                escape=False)
+    score._finalize()
+    loader.load.assert_not_called()
+    assert score.tpl.render('foo.jinja2.tpl') == '<'
+    loader.load.assert_called_once_with('foo.jinja2.tpl')
+
+
+def test_missing_global():
+    score = init_score(finalize=False)
+    loader = unittest.mock.Mock()
+    loader.load.return_value = (False, '{{ func() }}')
+    score.tpl.loaders['tpl'].append(loader)
+    score.tpl.filetypes['text/plain'].extensions.append('tpl')
+    # Note: adding global for mimetype text/plain, not text/html:
     score.tpl.filetypes['text/plain'].add_global('func', lambda: 'foo!')
     score._finalize()
     loader.load.assert_not_called()
-    assert score.tpl.render('foo.jinja2.tpl') == 'foo'
-    loader.load.assert_called_once_with('foo.jinja2.tpl')
+    with pytest.raises(jinja2.UndefinedError):
+        score.tpl.render('foo.jinja2.tpl')
