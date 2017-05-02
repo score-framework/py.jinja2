@@ -32,6 +32,13 @@ import errno
 import os
 
 
+def _wrap_callable(callable_):
+    @wraps(callable_)
+    def wrapped_callable(*args, **kwargs):
+        return jinja2.Markup(callable_(*args, **kwargs))
+    return wrapped_callable
+
+
 defaults = {
     'extension': 'jinja2',
     'cachedir': None,
@@ -115,10 +122,7 @@ class Jinja2Renderer(Renderer):
             for name, value, escape in self.filetype.globals:
                 if not escape:
                     if callable(value):
-                        @wraps(value)
-                        def wrapped_callable(*args, **kwargs):
-                            return jinja2.Markup(value(*args, **kwargs))
-                        value = wrapped_callable
+                        value = _wrap_callable(value)
                     elif isinstance(value, str):
                         value = jinja2.Markup(value)
                 env.globals[name] = value
