@@ -101,13 +101,9 @@ class Jinja2Renderer(Renderer):
         if self._jinja2_conf.cachedir:
             kwargs['bytecode_cache'] =\
                 jinja2.FileSystemBytecodeCache(self._jinja2_conf.cachedir)
-        if len(self._tpl_conf.rootdirs) > 1:
-            kwargs['loader'] = jinja2.ChoiceLoader(list(
-                map(jinja2.FileSystemLoader, self._tpl_conf.rootdirs)
-            ))
-        elif self._tpl_conf.rootdirs:
+        if self._tpl_conf.rootdirs:
             kwargs['loader'] = \
-                jinja2.FileSystemLoader(self._tpl_conf.rootdirs[0])
+                jinja2.FileSystemLoader(self._tpl_conf.rootdirs)
         can_escape = self.filetype.mimetype in ('text/xml', 'text/html')
         env = jinja2.Environment(
             autoescape=can_escape,
