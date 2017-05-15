@@ -116,7 +116,7 @@ class Jinja2Renderer(Renderer):
             autoescape=can_escape,
             extensions=self.get_extensions(),
             undefined=jinja2.StrictUndefined,
-            **kwargs,
+            **kwargs
         )
         if can_escape:
             for name, value, escape in self.filetype.globals:
