@@ -83,7 +83,8 @@ class Jinja2Renderer(Renderer):
         Renders given template *file* with the given *variables* dict.
         """
         try:
-            tpl = self.root_file_loader.load(self.env, file, self.env.globals)
+            tpl = self.root_file_loader.load(self.env, os.path.abspath(file),
+                                             self.env.globals)
         except jinja2.TemplateNotFound as e:
             raise FileNotFoundError(
                 errno.ENOENT, os.strerror(errno.ENOENT), file) from e
