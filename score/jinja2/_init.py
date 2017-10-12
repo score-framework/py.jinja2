@@ -24,7 +24,7 @@
 # the discretion of STRG.AT GmbH also the competent court, in whose district the
 # Licensee has his registered seat, an establishment or assets.
 
-from score.init import ConfiguredModule
+from score.init import ConfiguredModule, parse_list
 from score.tpl import Renderer
 from functools import wraps
 import jinja2
@@ -42,6 +42,7 @@ def _wrap_callable(callable_):
 defaults = {
     'extension': 'jinja2',
     'cachedir': None,
+    'filters': [],
 }
 
 
@@ -52,17 +53,19 @@ def init(confdict, tpl):
     """
     conf = defaults.copy()
     conf.update(confdict)
-    return ConfiguredJinja2Module(tpl, conf['extension'], conf['cachedir'])
+    return ConfiguredJinja2Module(tpl, conf['extension'], conf['cachedir'],
+                                  parse_list(conf['filters']))
 
 
 class ConfiguredJinja2Module(ConfiguredModule):
 
-    def __init__(self, tpl, extension, cachedir):
+    def __init__(self, tpl, extension, cachedir, filters):
         import score.jinja2
         super().__init__(score.jinja2)
         self.tpl = tpl
         self.extension = extension
         self.cachedir = cachedir
+        self.filters = filters
         tpl.engines[extension] = self._create_renderer
         tpl.filetypes['text/html'].extensions.append(extension)
 
@@ -124,6 +127,9 @@ class Jinja2Renderer(Renderer):
                 if not escape:
                     if callable(value):
                         value = _wrap_callable(value)
+                        if name in self._jinja2_conf.filters:
+                            env.filters[name] = value
+                            continue
                     elif isinstance(value, str):
                         value = jinja2.Markup(value)
                 env.globals[name] = value
