@@ -1,3 +1,6 @@
+.. image:: https://raw.githubusercontent.com/score-framework/py.doc/master/docs/score-banner.png
+    :target: http://score-framework.org
+
 `The SCORE Framework`_ is a collection of harmonized python and javascript
 libraries for the development of large scale web projects. Powered by strg.at_.
 
@@ -10,8 +13,10 @@ score.jinja2
 
 This package easily intergrates jinja2 templates in your projects.
 
-This module is a work in progress, thus currently poorly documented :-/
+The `narrative documentation of score.jinja2`__ contains all the information you
+need to put this module to good use.
 
+__ http://www.score-framework.org/doc/python/jinja2/
 
 License
 =======

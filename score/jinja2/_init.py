@@ -50,6 +50,9 @@ def init(confdict, tpl):
     """
     Initializes this module acoording to the :ref:`SCORE module initialization
     guidelines <module_initialization>` with the following configuration keys:
+
+    :confkey:`cachedir` :confdefault:`None`
+        A cache folder to use for storing parsed templates. Highly recommended.
     """
     conf = defaults.copy()
     conf.update(confdict)
@@ -58,6 +61,10 @@ def init(confdict, tpl):
 
 
 class ConfiguredJinja2Module(ConfiguredModule):
+    """
+    This module's :class:`configuration object
+    <score.init.ConfiguredModule>`.
+    """
 
     def __init__(self, tpl, extension, cachedir, filters):
         import score.jinja2
@@ -74,6 +81,9 @@ class ConfiguredJinja2Module(ConfiguredModule):
 
 
 class Jinja2Renderer(Renderer):
+    """
+    A :class:`score.tpl.Renderer` capable of rendering jinja2 templates.
+    """
 
     def __init__(self, jinja2_conf, *args, **kwargs):
         self._jinja2_conf = jinja2_conf
