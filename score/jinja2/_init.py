@@ -122,14 +122,12 @@ class Jinja2Renderer(Renderer):
         if self._jinja2_conf.cachedir:
             kwargs['bytecode_cache'] =\
                 jinja2.FileSystemBytecodeCache(self._jinja2_conf.cachedir)
-        if self._tpl_conf.rootdirs:
-            kwargs['loader'] = \
-                jinja2.FileSystemLoader(self._tpl_conf.rootdirs)
         can_escape = self.filetype.mimetype in ('text/xml', 'text/html')
         env = jinja2.Environment(
             autoescape=can_escape,
             extensions=self.get_extensions(),
             undefined=jinja2.StrictUndefined,
+            loader=Jinja2Loader(self._jinja2_conf, self._tpl_conf),
             **kwargs
         )
         if can_escape:
@@ -154,3 +152,31 @@ class Jinja2Renderer(Renderer):
         :class:`jinja2.Environment` in :meth:`.build_environment`.
         """
         return ['jinja2.ext.i18n', 'jinja2.ext.autoescape']
+
+
+class Jinja2Loader(jinja2.BaseLoader):
+
+    def __init__(self, jinja2_conf, tpl_conf):
+        self.jinja2_conf = jinja2_conf
+        self.tpl_conf = tpl_conf
+
+    def get_source(self, environment, template):
+        is_path, result = self.tpl_conf.load(template)
+        mtime = os.path.getmtime(result)
+        if is_path:
+            return (
+                open(result).read(),
+                result,
+                lambda: mtime == os.path.getmtime(result)
+            )
+        return (
+            result,
+            None,
+            lambda: False
+        )
+
+    def list_templates(self):
+        ext = self.jinja2_conf.extension
+        if ext not in self.tpl_conf.loaders:
+            return []
+        return sorted(self.tpl_conf.loaders[ext].paths)
