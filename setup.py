@@ -34,7 +34,7 @@ with open(os.path.join(here, 'README.rst')) as f:
 
 setup(
     name='score.jinja2',
-    version='0.1.0',
+    version='0.1.1',
     long_description=README,
     author='strg.at',
     author_email='score@strg.at',
