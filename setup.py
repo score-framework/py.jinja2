@@ -46,6 +46,6 @@ setup(
     install_requires=[
         'score.init',
         'score.tpl >= 0.3.0',
-        'jinja2',
+        'jinja2 < 3.0',
     ],
 )
